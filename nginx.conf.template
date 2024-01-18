@@ -1,0 +1,44 @@
+worker_processes 4;
+worker_rlimit_nofile 65536;
+
+events {
+    worker_connections 8192;
+}
+
+stream {
+
+    tcp_nodelay on;
+    resolver RESOLVER_IP ipv6=off valid=RESOLVER_TIMEOUT;
+  
+
+    map $remote_addr $upstream {
+        default TURN;
+    }
+
+    server {
+        listen 5349;
+        proxy_pass $upstream:5349;
+    }
+
+
+    server {
+        listen 5349 udp;
+        proxy_timeout 1s;
+        proxy_responses 0; 
+        proxy_pass $upstream:5349;
+    }
+
+
+    server {
+        listen 3478;
+        proxy_pass $upstream:3478;
+    }
+
+
+    server {
+        listen 3478 udp;
+        proxy_responses 0; 
+        proxy_timeout 1s;
+        proxy_pass $upstream:3478;
+    }
+}
